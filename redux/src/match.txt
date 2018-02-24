@@ -1,0 +1,174 @@
+http://idea.singee77.com
+
+Participant
+---------------------
+participantId(PK)(INT)
+participantName(Varchar)(60)
+contact(Varchar)(10)
+
+Player
+---------------------
+playerId(PK)(INT)
+playerName(Varchar)(60)
+contact(Varchar)(10)
+
+
+ParticipantPlayer
+---------------------
+participantId(FK)(INT) 1 Participant =11 Player
+playerid(FK)(INT)
+//score(Int)
+
+
+
+Tournament
+------------------
+tournamentId(PK)(INT)
+tournamentName(Varchar)(60)
+
+Match
+------------------
+matchId(PK)(INT)
+tournamentid(FK)(INT)
+matchName(Varchar)(60)
+location(Varchar)(70)
+
+
+MatchDetail
+----------------
+MatchDetail_Id(PK)(INT)
+matchId(FK)(INT)
+playerId(PK)(INT)
+run(INT)
+catch(INT)
+wicket(INT)
+stump(INT)
+
+
+PointDetail
+----------------
+pd_Id(PK)(INT)
+tournamentid(FK)(INT)
+matchId(FK)(INT)
+playerid(FK)(INT)
+stump(INT)
+catch(INT)
+wicket(INT)
+run(INT)
+Total(INT)
+
+
+
+
+
+
+Baller
+--------------
+
+Top10Tourna
+
+select player.playerId,sum(matchdetail.wicket)
+FROM MatchDetail,player,tournament,match
+WHERE 
+   matchdetail.playerId=player.playerId AND
+   matchdetail.matchId=match.matchId AND
+   match.tournamentId=tournament.tournamentId AND
+   tournament.tournamentName=tname
+GROUP by player.playerId
+ORDER BY sum(matchdetail.wicket)
+LIMIT 10
+
+
+
+
+
+Top10TournaMAtch
+
+select player.playerId,sum(matchdetail.wicket)
+FROM MatchDetail,player,tournament,match
+WHERE 
+   matchdetail.playerId=player.playerId AND
+   matchdetail.matchId=match.matchId AND
+   match.tournamentId=tournament.tournamentId AND
+   match.matchName=mname and
+   tournament.tournamentName=tname
+GROUP by player.playerId
+ORDER BY sum(matchdetail.wicket)
+LIMIT 10
+
+
+
+
+select player.playerId,sum(matchdetail.wicket)
+FROM MatchDetail,player,tournament,match
+WHERE 
+   matchdetail.playerId=player.playerId
+GROUP by player.playerId
+ORDER BY sum(matchdetail.wicket)
+LIMIT 10
+
+
+
+Runner
+--------------
+Tourna
+
+
+select player.playerId,sum(matchdetail.run)
+FROM MatchDetail,player,tournament,match
+WHERE 
+   matchdetail.playerId=player.playerId AND
+   matchdetail.matchId=match.matchId AND
+   match.tournamentId=tournament.tournamentId AND
+   tournament.tournamentName=tname
+GROUP by player.playerId
+ORDER BY sum(matchdetail.run)
+LIMIT 10
+
+
+
+Match
+
+
+select player.playerId,sum(matchdetail.run)
+FROM MatchDetail,player,tournament,match
+WHERE 
+   matchdetail.playerId=player.playerId AND
+   matchdetail.matchId=match.matchId AND
+   match.tournamentId=tournament.tournamentId AND
+   match.matchName=mname and
+   tournament.tournamentName=tname
+GROUP by player.playerId
+ORDER BY sum(matchdetail.run)
+LIMIT 10
+
+
+
+All
+
+
+
+select player.playerId,sum(matchdetail.run)
+FROM MatchDetail,player,tournament,match
+WHERE 
+   matchdetail.playerId=player.playerId
+GROUP by player.playerId
+ORDER BY sum(matchdetail.run)
+LIMIT 10
+
+
+
+Participant
+-------------
+
+select par.participantName,sum(pd.total) 
+from participantName par,pointdetail pd, tournament tor
+WHERE  tor.tournamentName=tname
+ORDER by sum(pd.total) 
+LIMIT 10
+
+
+
+
+
+
