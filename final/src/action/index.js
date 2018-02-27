@@ -37,45 +37,74 @@ export const deldata=(deleteId)=>{
     }
 }
 
-export const insertData=(name,age,contact,password,gender,email,hobyArr,state,city,photo1)=>{
+export const Alldeldata=(deleteData)=>{
     return function (dispatch) {
-        return axios.post( 'http://localhost:5000/insert',{
-            sname:name,
-            age:age,
-            contact:contact,
-            password:password,
-            gender:gender,
-            email:email,
-            hobbies:hobyArr,
-            state:state,
-            city:city,
-            photo:photo1,
-            flag:1
-        }).then((sucess)=>{
+            return axios.post('http://localhost:5000/alldel',{info:deleteData}).then((sucess)=>{
+                console.log("In delete",sucess);
+                dispatch({type:"AllDelete_Data",res:sucess.data})
+            })
+        }
+    }
+
+export const insertData=(obj)=>{
+    return function (dispatch) {
+        return axios.post( 'http://localhost:5000/insert',obj).then((sucess)=>{
             dispatch({type:"Insert_Data",res:sucess.data})
         })
     }
 }
-export const upadteData=(id,name,age,contact,password,gender,email,hobbies,state,city,photo1)=> {
+
+// export const insertData=(name,age,contact,password,gender,email,hobyArr,state,city,photo1)=>{
+//     return function (dispatch) {
+//         return axios.post( 'http://localhost:5000/insert',{
+//             sname:name,
+//             age:age,
+//             contact:contact,
+//             password:password,
+//             gender:gender,
+//             email:email,
+//             hobbies:hobyArr,
+//             state:state,
+//             city:city,
+//             photo:photo1,
+//             flag:1
+//         }).then((sucess)=>{
+//             dispatch({type:"Insert_Data",res:sucess.data})
+//         })
+//     }
+// }
+
+
+// export const upadteData=(id,name,age,contact,password,gender,email,hobbies,state,city,photo1)=> {
+//     return function (dispatch) {
+//         return axios.post('http://localhost:5000/upd',{
+//             id:id,
+//             age:age,
+//             password:password,
+//             gender:gender,
+//             sname:name,
+//             state:state,
+//             city:city,
+//             email:email,
+//             photo:photo1,
+//             contact:contact,
+//             hobbies:hobbies
+//         }).then((sucess)=>{
+//             console.log('after back from update=',sucess.data)
+//             dispatch({type:"Update_data",res:sucess.data})
+//         })
+//     }
+// }
+
+export const upadteData=(obj)=> {
     return function (dispatch) {
-        return axios.post('http://localhost:5000/upd',{
-            id:id,
-            age:age,
-            password:password,
-            gender:gender,
-            sname:name,
-            state:state,
-            city:city,
-            email:email,
-            photo:photo1,
-            contact:contact,
-            hobbies:hobbies
-        }).then((sucess)=>{
+        return axios.post('http://localhost:5000/upd',obj).then((sucess)=>{
             console.log('after back from update=',sucess.data)
             dispatch({type:"Update_data",res:sucess.data})
         })
     }
 }
+
 
 export const LoginCheck=(obj)=> {
     console.log("In action",obj)

@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
-class Header extends Component{
+import '../App.css';
+
+class Header extends Component
+{
     render(){
         return(
-            <div>
-              Header
+            <div className="">
+                <h1>Veer Narmad South Gujrat University</h1>
             </div>
         )
     }
 }
-
 export default Header;

@@ -1,16 +1,11 @@
 import React, { Component } from 'react';
-// import {bindActionCreators} from 'redux'
-// import {connect} from 'react-redux'
-//import {selectUser} from '../actions/index'
-
-class Footer extends Component{
+class Footer extends Component
+{
     render(){
-        return(
-            <div>
-                Footer
+        return (  <div className="footer ">
+                copyright @vnsgu
             </div>
         )
     }
 }
-
 export default Footer;

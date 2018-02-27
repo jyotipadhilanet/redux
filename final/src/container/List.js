@@ -1,16 +1,16 @@
 import React, { Component } from 'react';
 import {bindActionCreators} from 'redux'
 import {connect} from 'react-redux';
-import {cityData,deldata,insertData,edtInfo,upadteData} from '../action/index'
+import {cityData,deldata,insertData,edtInfo,upadteData,Alldeldata} from '../action/index'
 
 class List extends Component {
     constructor(props) {
         super(props)
         this.state = {
-          //  allData:[],
             disData: [],
             searchData: [],
             hobyArr: [],
+            chkdel:[],
             isSearch: false,
             isEditing: false,
             deleteId: '',
@@ -22,11 +22,12 @@ class List extends Component {
             gender: '',
             email: '',
             hobbies: '',
+            dels:'',
             state: '',
             city: '',
             password: '',
             photo: '',
-            photo1: ''
+            photo1:''
         }
     }
     componentWillReceiveProps(nextProps){
@@ -34,31 +35,31 @@ class List extends Component {
         this.setState({ allData:nextProps.user },()=>{this.fetlimit(1)})
     }
     componentWillMount(){
-      // var data=localStorage.getItem('user')
-      //   if(data.length<=0){
-      //     this.props.history.push('/')
-      //   }
-
+        if(localStorage.getItem('user').length<=0){
+             this.props.history.push('/')
+        }
         console.log("In componentWillMount")
         this.fetlimit(1)
     }
     handle = (e) => {
+        this.state.city=''
         this.props.cityData(e.target.options[e.target.selectedIndex].value)
         this.setState({state: e.target.options[e.target.selectedIndex].value})
     }
-
+    logout=()=>{
+        localStorage.setItem('user','')
+        this.props.history.push('/')
+    }
     clearData = () => {
         this.setState({isEditing: false})
         this.setState({sname: '', age: '', contact: '', gender: '', email: '', hobbies: '', state: '', city: '', password: '', photo: '', photo1: ''})
         document.getElementById('password').value = ''
     }
-
     fetlimit = (e) => {
         var last = e * this.state.numrec;
         var start = last - this.state.numrec;
         this.state.disData = this.props.user.slice(start, last)
         this.setState({disdata: this.props.user.slice(start, last)});
-        console.log("In DisData...............",this.state.disData)
     }
 
     changeNum = (e) => {
@@ -66,11 +67,19 @@ class List extends Component {
             this.fetlimit(1);
         })
     }
+
+    AllDelete=()=>{
+        this.props.Alldeldata(this.state.dels)
+    }
+
+
+
     hobyArr = (e) => {
-        this.state.hobyArr.push(e.target.value)
-        this.setState({hobbies: this.state.hobyArr.join(",")})
-        console.log(this.state.hobyArr)
-        console.log(this.state.hobbies)
+        if(this.state.hobyArr.indexOf(e.target.value)==-1)
+              this.state.hobyArr.push(e.target.value)
+        else
+            this.state.hobyArr.pop(e.target.value)
+        this.setState({hobbies: this.state.hobyArr.join(",")},()=> console.log(this.state.hobbies))
     }
 
     sort = (e) => {
@@ -78,13 +87,11 @@ class List extends Component {
         var mydata = [].concat(this.state.disData).sort((a, b) => a[key] > b[key])
         this.setState({disData: mydata})
     }
-
     dsort = (e) => {
         var key = e.target.id
         var mydata = [].concat(this.state.disData).sort((a, b) => a[key] < b[key])
         this.setState({disData: mydata})
     }
-
     search = (e) => {
         var arr = []
         var data = e.target.value
@@ -103,32 +110,56 @@ class List extends Component {
     }
 
     setFile = (e) => {
-        e.preventDefault();
-        let file = e.target.files[0];
-        let reader = new FileReader();
-        reader.onloadend = () => {
-            this.setState({
-                photo: file,
-                photo1: reader.result
-            });
-        };
-        reader.readAsDataURL(file);
-        console.log(`File Upload : ${this.state.photo}`);
+        // e.preventDefault();
+        // let file = e.target.files[0];
+        // let reader = new FileReader();
+        // reader.onloadend = () => {
+        //     this.setState({
+        //         photo: file,
+        //         photo1: reader.result
+        //     });
+        // };
+        // reader.readAsDataURL(file);
+        // console.log(`File Upload : ${this.state.photo}`);
+        this.setState({photo:e.target.files[0]},()=> console.log("In photo",this.state.photo))
     }
-
     handleDelete=()=>{
         this.props.deldata(this.state.deleteId)
     }
-
     handleInsert=()=> {
-        this.props.insertData(this.state.sname, this.state.age, this.state.contact, this.state.password,
-            this.state.gender, this.state.email, this.state.hobyArr, this.state.state, this.state.city, this.state.photo1, 1)
+        var formdata=new FormData();
+        formdata.append('sname',this.state.sname);
+        formdata.append('age',this.state.age)
+        formdata.append('contact',this.state.contact)
+        formdata.append('password',this.state.password)
+        formdata.append('gender',this.state.gender);
+        formdata.append('email',this.state.email)
+        formdata.append('hobbies',this.state.hobbies)
+        formdata.append('state',this.state.state)
+        formdata.append('city',this.state.city)
+        formdata.append('photo',this.state.photo)
+
+        this.props.insertData(formdata)
+        // this.props.insertData(this.state.sname, this.state.age, this.state.contact, this.state.password,
+        //     this.state.gender, this.state.email, this.state.hobbies, this.state.state, this.state.city, this.state.photo)
     }
 
     handleUpdate=()=> {
-        console.log("After update the value is=",this.state)
-        this.props.upadteData(this.state.editId,this.state.sname, this.state.age,this.state.contact, this.state.password, this.state.gender,this.state.email,this.state.hobbies,
-            this.state.state,this.state.city,  this.state.photo1)
+        var formdata=new FormData();
+        formdata.append('sname',this.state.sname);
+        formdata.append('age',this.state.age)
+        formdata.append('contact',this.state.contact)
+        formdata.append('password',this.state.password)
+        formdata.append('gender',this.state.gender);
+        formdata.append('email',this.state.email)
+        formdata.append('hobbies',this.state.hobbies)
+        formdata.append('state',this.state.state)
+        formdata.append('city',this.state.city)
+        formdata.append('photo',this.state.photo)
+        formdata.append('id',this.state.editId)
+        this.props.upadteData(formdata)
+        // this.props.upadteData(this.state.editId,this.state.sname, this.state.age,this.state.contact, this.state.password, this.state.gender,this.state.email,this.state.hobbies,
+        //     this.state.state,this.state.city,  this.state.photo1)
     }
 
 
@@ -142,10 +173,16 @@ class List extends Component {
                     ()=>console.log("After Edit the info is",this.state))
             }
         })
-
     }
 
 
+    chkDelete=(e)=>{
+        if(this.state.chkdel.indexOf(e.target.id)==-1)
+            this.state.chkdel.push(e.target.id)
+        else
+            this.state.chkdel.pop(e.target.id)
+        this.setState({dels: this.state.chkdel.join(",")},()=> console.log(this.state.dels))
+    }
 
 
 
@@ -169,8 +206,6 @@ class List extends Component {
         console.log("In DisData...............",this.state.disData)
 
         return ( <div>
-
-
                 <div className="modal fade" id="myModal">
                     <div className="modal-dialog modal-lg">
                         <div className="modal-content">
@@ -181,9 +216,7 @@ class List extends Component {
                             </div>
 
                             <div className="modal-body">
-                                <form onSubmit={(event) => {
-                                    event.preventDefault();
-                                }} encType="multipart/form-data">
+                                <form onSubmit={(event) => {event.preventDefault();}} encType="multipart/form-data">
                                     <div className="form-row">
                                         <div className="form-group col-md-6">
                                             Student Name :-<input type="text" ref="name" id="name" placeholder="Name"
@@ -227,7 +260,7 @@ class List extends Component {
                                     <div className="form-row">
                                         <div className="form-group col-md-12">
                                             Image :-
-                                            {(this.state.isEditing) ? <img src={this.state.photo} height="100px" width="200px"/> : ""}
+                                            {<img src={'http://localhost:5000/upload/'+this.state.photo} height="100px" width="200px"/>}
                                             <input type="file" ref="img" id="img" placeholder="image"
                                                    className="form-control is-valid" onChange={this.setFile}/>
                                         </div>
@@ -344,7 +377,7 @@ class List extends Component {
                             + Add Student
                         </button>
                     </div>
-                    <div className="form-group col-md-3">
+                    <div className="form-group col-md-2">
                         <input type="text" className="form-control is-valid" onChange={this.search}
                                placeholder="search All"/>
                     </div>
@@ -356,7 +389,7 @@ class List extends Component {
                             <option value="10">10</option>
                         </select>
                     </div>
-                    <div className="form-group col-md-3">
+                    <div className="form-group col-md-4">
                         {
                             pageArr.map((v, i) => {
                                 return <button className="btn btn-primary" type="button" value={v} onClick={() => {
@@ -365,6 +398,13 @@ class List extends Component {
                             })
                         }
                     </div>
+                    <div className="form-group col-md-1"  >
+                        <button class="btn btn-danger" onClick={this.AllDelete}>All delete</button>
+                    </div>
+                    <div className="form-group col-md-1"  >
+                       <button class="btn btn-info" onClick={this.logout}>Logout</button>
+                    </div>
+
                 </div>
 
 
@@ -403,7 +443,7 @@ class List extends Component {
                                         <td>{val.state}</td>
                                         <td>{val.city}</td>
                                         <td>{val.hobbies}</td>
-                                        <td><img src={val.photo} height="70px" width="100px"/></td>
+                                        <td><img src={'http://localhost:5000/upload/'+val.photo} height="70px" width="100px"/></td>
                                         <td>
                                             <button id="myModal" onClick={() => this.handleEdit(val._id)
                                             } data-toggle="modal" data-target="#myModal" className="btn btn-info"><i
@@ -412,6 +452,9 @@ class List extends Component {
                                                     onClick={() => this.setState({deleteId: val._id})}
                                                     data-toggle="modal" data-target="#mydel"><i
                                                 className="fa fa-trash"></i></button>
+                                            <input type="checkbox" id={val._id} key={val._id}
+                                                   checked={this.state.dels.includes(val._id)?'checked':''} onChange={this.chkDelete}  />
+
                                         </td>
                                     </tr>
                                 )
@@ -427,7 +470,7 @@ class List extends Component {
                                         <td>{val.state}</td>
                                         <td>{val.city}</td>
                                         <td>{val.hobbies}</td>
-                                        <td><img src={val.photo} height="70px" width="100px"/></td>
+                                        <td><img src={'http://localhost:5000/upload/'+val.photo} height="70px" width="100px"/></td>
                                         <td>
                                             <button id="myModal" onClick={() => {this.handleEdit(val._id)}
                                             } data-toggle="modal" data-target="#myModal" className="btn btn-info"><i
@@ -436,6 +479,9 @@ class List extends Component {
                                                 this.setState({deleteId: val._id})
                                             }} data-toggle="modal" data-target="#mydel"><i className="fa fa-trash"></i>
                                             </button>
+                                            <input type="checkbox" id={val._id} key={val._id}
+                                                   checked={this.state.dels.includes(val._id)?'checked':''}
+                                                   onChange={this.chkDelete}  />
                                         </td>
                                     </tr>
                                 )
@@ -456,7 +502,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-    return bindActionCreators({cityData:cityData,deldata:deldata,insertData:insertData,edtInfo:edtInfo,upadteData:upadteData },dispatch)
+    return bindActionCreators({cityData,deldata,insertData,edtInfo,upadteData,Alldeldata},dispatch)
 }
 
 export default connect(mapStateToProps,mapDispatchToProps)(List);

@@ -22,6 +22,17 @@ export default function (state=[],action) {
             console.log("In reducer after Delete Data is=",mydata)
             return mydata
             break;
+
+        case "AllDelete_Data":
+            console.log("in index",action.res)
+            var data=action.res.split(",")
+            var arr=[...state];
+            for(let i=0;i<data.length;i++){
+                arr=arr.filter((d)=>d._id!=data[i]);
+                console.log(arr)
+            }
+            return arr;
+            break
         default :
             return state
     }
