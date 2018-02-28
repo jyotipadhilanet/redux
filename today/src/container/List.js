@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import {bindActionCreators} from 'redux'
 import {connect} from 'react-redux';
 import {cityData,deldata,insertData,edtInfo,upadteData,Alldeldata} from '../action/index'
-
 class List extends Component {
     constructor(props) {
         super(props)
@@ -13,6 +12,7 @@ class List extends Component {
             chkdel:[],
             isSearch: false,
             isEditing: false,
+            isphotoChange:false,
             deleteId: '',
             editId: '',
             numrec: 3,
@@ -51,8 +51,7 @@ class List extends Component {
         this.props.history.push('/')
     }
     clearData = () => {
-        this.setState({isEditing: false})
-        this.setState({sname: '', age: '', contact: '', gender: '', email: '', hobbies: '', state: '', city: '', password: '', photo: '', photo1: ''})
+        this.setState({isEditing: false,isphotoChange:false,sname: '', age: '', contact: '', gender: '', email: '', hobbies: '', state: '', city: '', password: '', photo: '', photo1: ''})
         document.getElementById('password').value = ''
     }
     fetlimit = (e) => {
@@ -121,7 +120,8 @@ class List extends Component {
         // };
         // reader.readAsDataURL(file);
         // console.log(`File Upload : ${this.state.photo}`);
-        this.setState({photo:e.target.files[0]},()=> console.log("In photo",this.state.photo))
+        this.setState({photo:e.target.files[0]})
+
     }
     handleDelete=()=>{
         this.props.deldata(this.state.deleteId)
@@ -157,6 +157,7 @@ class List extends Component {
         formdata.append('city',this.state.city)
         formdata.append('photo',this.state.photo)
         formdata.append('id',this.state.editId)
+        console.log('photo',this.state.photo);
         this.props.upadteData(formdata)
         // this.props.upadteData(this.state.editId,this.state.sname, this.state.age,this.state.contact, this.state.password, this.state.gender,this.state.email,this.state.hobbies,
         //     this.state.state,this.state.city,  this.state.photo1)
@@ -411,7 +412,7 @@ class List extends Component {
                 <table className="table table-striped">
                     <tbody>
                     <tr>
-                        <th>Name <a id="sname" onClick={this.sort}>&#9650;</a>
+                        <th>Name<a id="sname" onClick={this.sort}>&#9650;</a>
                             <a id="sname" onClick={this.dsort}>&#9660;</a></th>
                         <th>Age<a id="age" onClick={this.sort}>&#9650;</a>
                             <a id="age" onClick={this.dsort}>&#9660;</a></th>
