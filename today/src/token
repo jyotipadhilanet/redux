@@ -1,0 +1,91 @@
+var express=require('express')
+var app=express();
+var _=require('lodash');
+var mongoose=require('mongoose');
+var jwt=require('jsonwebtoken');
+var bcrypt=require('bcryptjs')
+var url="mongodb://localhost:27017/mydb";
+var Validator=require('validator');
+mongoose.Promise=global.Promise;
+mongoose.connect(url);
+var bodyParser=require('body-parser');
+app.use(bodyParser.json());
+
+var userSchema=new mongoose.Schema({
+    userName:{
+        type:String,
+        require:true
+    },
+    password:{
+        type:String,
+        require:true
+    },
+    email:{
+        type:String,
+        uniq:true,
+        validate:{
+            validator:Validator.isEmail,
+            message:'{VALUE} is not valid email'
+        }
+    },
+    tokens:[{
+        access:{
+            type:String,
+            require:true
+        },
+        token:{
+            type:String,
+            require:true
+        }
+    }]
+})
+
+// userSchema.methods.generateAuthToken=()=>{
+//
+//
+// }
+// userSchema.pre('save',()=>{
+//     var user=this;
+//     if(user.isModified('Password')){
+//        bcrypt.genSalt(10,(err,salt)=>{
+//            bcrypt.hash(user.Password,salt,(err,hash)=>{
+//                user.Password=hash;
+//                next()
+//            })
+//        })
+//     }
+//     else {
+//         next();
+//     }
+// })
+
+
+var User=mongoose.model('UserInfo',userSchema);
+app.get('/',(req,res)=>{
+    res.send("Hello");
+})
+app.post('/insertData',(req,res)=>{
+
+    var newstud=new User(req.body);
+    newstud.password=bcrypt.hashSync(req.body.password,10)
+    newstud.save().then(()=>{
+         var access='auth';
+         var token=jwt.sign(
+             {
+                 _id:newstud._id.toHexString()
+                 ,access
+             },
+             'abc123').toString()
+         newstud.tokens.push({access,token})
+         console.log("Token",token)
+         return newstud.save().then(()=>{return token})
+     }).then((token)=>{
+         res.header('x-auth',token).send(newstud)
+     }).catch((err)=>{
+         res.send(err)
+     })
+})
+
+app.listen(4000,()=>{
+    console.log("successfully connected to server")
+})
