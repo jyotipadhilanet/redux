@@ -1,3 +1,11 @@
+// http://idea.ibdyr.com
+//     http://idea.iteblog.com/key.php
+//         http://www.aku.vn/idea
+//             http://www.imsxm.com/jetbrains-license-server.html
+
+
+
+
 import React, { Component } from 'react';
 import {bindActionCreators} from 'redux'
 import {connect} from 'react-redux';
@@ -13,6 +21,7 @@ class List extends Component {
             isSearch: false,
             isEditing: false,
             isphotoChange:false,
+            isCorrect:true,
             deleteId: '',
             editId: '',
             numrec: 3,
@@ -27,7 +36,23 @@ class List extends Component {
             city: '',
             password: '',
             photo: '',
-            photo1:''
+            photo1:'',
+            flag:true,
+
+
+
+
+
+
+
+
+            errName:'',
+            errAge:'',
+            errGen:'',
+            errState:'',
+            errCity:'',
+            errContat:'' ,
+            errPass:''
         }
     }
     componentWillReceiveProps(nextProps){
@@ -186,6 +211,60 @@ class List extends Component {
     }
 
 
+    chkvalidation=(e)=>{
+        switch (e.target.id){
+            case "name":
+                if(/^[a-zA-Z]{3,50}$/.test(e.target.value)){
+                    console.log(this.state.isCorrect)
+                    this.setState({flag:true});
+                }
+                else {
+                    this.setState({isCorrect:false})
+                    if(this.state.flag)
+                    {
+                        alert('username must be minimu 3 and maximum 50')
+                        this.setState({flag:false});
+                    }
+                    document.getElementById('name').focus();
+                      //  errName:'enter name properly'
+                    console.log(this.state.isCorrect)
+                }
+                break
+            case "password":
+                if(/^.{3,50}$/.test(e.target.value)){
+                    console.log(this.state.isCorrect)
+                }
+                else {
+                    this.setState({isCorrect:false})
+                    this.setState({
+                        errPass:'enter proper password'
+                    })
+                   // alert('password must be minimu 3 and maximum 50')
+                    console.log(this.state.isCorrect)
+                }
+                break
+            case "img":
+                if((e.target.files[0])){
+                    console.log("true")
+                }
+                else {
+                    this.setState({isCorrect:false})
+                    console.log(this.state.isCorrect)
+                }
+                break
+            case "age":
+                if(/^[0-9]{1,2}$/.test(e.target.value)){
+                    console.log(this.state.isCorrect)
+                }
+                else {
+                    this.setState({isCorrect:false})
+                    console.log(this.state.isCorrect)
+                }
+                break
+        }
+    }
+
+
 
 
 
@@ -221,9 +300,10 @@ class List extends Component {
                                     <div className="form-row">
                                         <div className="form-group col-md-6">
                                             Student Name :-<input type="text" ref="name" id="name" placeholder="Name"
-                                                                  className="form-control is-valid"
-                                                                  value={this.state.sname} onChange={(e) => {
-                                            this.setState({sname: e.target.value})
+                                                                  className={this.state.flag?"form-control is-valid":"form-control is-invalid" }
+                                                                  value={this.state.sname}
+                                                                  onBlur={this.chkvalidation}
+                                                                  onChange={(e) => {this.setState({sname: e.target.value})
 
                                         }}/>
 
@@ -231,6 +311,7 @@ class List extends Component {
                                         <div className="form-group col-md-6">
                                             Password :- <input type="password" ref="password" id="password"
                                                                placeholder="password" className="form-control is-valid"
+                                                               onBlur={this.chkvalidation}
                                                                onChange={(e) => {
                                                                    this.setState({password: e.target.value})
                                                                }}/>
@@ -238,7 +319,9 @@ class List extends Component {
                                     </div>
                                     <div className="form-row">
                                         <div className="form-group col-md-12">
-                                            Age :- <input type="text" ref="age" id="age" placeholder="age" className="form-control is-valid" value={this.state.age} onChange={(e) => {this.setState({age: e.target.value})}}
+                                            Age :- <input type="text" ref="age" id="age" placeholder="age" className="form-control is-valid"
+                                                          onBlur={this.chkvalidation}
+                                                          value={this.state.age} onChange={(e) => {this.setState({age: e.target.value})}}
                                         />
                                         </div>
                                     </div>
@@ -261,8 +344,8 @@ class List extends Component {
                                     <div className="form-row">
                                         <div className="form-group col-md-12">
                                             Image :-
-                                            {<img src={'http://localhost:5000/upload/'+this.state.photo} height="100px" width="200px"/>}
-                                            <input type="file" ref="img" id="img" placeholder="image"
+                                            {(this.state.photo)?<img src={'http://localhost:5000/upload/'+this.state.photo} height="100px" width="200px"/> :'' }
+                                            <input type="file" ref="img" id="img" placeholder="image" onBlur={this.chkvalidation}
                                                    className="form-control is-valid" onChange={this.setFile}/>
                                         </div>
                                     </div>
@@ -337,7 +420,7 @@ class List extends Component {
                                 {(this.state.isEditing) ?
                                     <button type="button" className="btn btn-primary" data-dismiss="modal"
                                             onClick={this.handleUpdate}>Update</button> :
-                                    <button type="button" className="btn btn-primary" data-dismiss="modal"
+                                    <button disabled={!this.state.isCorrect} type="button" className="btn btn-primary" data-dismiss="modal"
                                             onClick={this.handleInsert}>Submit</button>}
                                 <button type="button" className="btn btn-danger" data-dismiss="modal"
                                         onClick={this.clearData}>Close
