@@ -4,23 +4,29 @@ var cors=require('cors')
 var bcrypt=require('bcryptjs')
 var fileUpload=require('express-fileupload')
 var mongoose=require('mongoose');
-
-mongoose.Promise=global.Promise;
-
+var jwt=require('jsonwebtoken')
 var url='mongodb://localhost:27017/mydb';
-
 var bodyparser=require('body-parser')
 var validator=require('validator')
+var token='';
+
 app.use(bodyparser.json())
 app.use(bodyparser.urlencoded({extended:true}))
 app.use(cors())
-
+mongoose.Promise=global.Promise;
 app.use(fileUpload());
 app.use(express.static(__dirname+"/"))
 
+// app.use((req,res,next)=>{
+//     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+//     res.header(`Access-Control-Expose-Headers`, `x-auth`);
+//     next();
+// });
 
-//var validator=require('express-validator')
+
+
 //app.use(validator())
+//var validator=require('express-validator')
 // app.use((req,res,next)=>{
 //     res.header('Access-Control-Allow-Origin','*');
 //     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -57,17 +63,32 @@ passport.deserializeUser((user,done)=>{
 //     }).catch((e)=>{
 //         return done(null,e);
 //     })
+//     //  var spassword=bcrypt.compareSync(password,user.password);
+//     // if(spassword){}
+//     // else return done(null,false)
 // }));
 
 passport.use(new LocalStrategy((username,password,done)=>{
+    stud.findOne({sname:username}).then((user)=>{
+        console.log("User data",user)
+        if(bcrypt.compareSync(password,user.password)){
+            console.log("in compare")
+            token=user.tokens[0].token
+            return done(null,user)
+        }
+    }).catch((err)=>{
+        return done(null,false)
+    })
 
-    console.log("username,password,hash pass word ",username,password);
-     stud.find({sname:username}).then((user)=>{
-         console.log(user)
-         var spassword=bcrypt.compareSync(password,user.password);
-        if(spassword){return done(null,user)}
-        else return done(null,false)
-     })
+    // loginUser.findOne({username,password}).then((user)=>{
+    //     console.log(username,password);
+    //     console.log(user);
+    //     if(!user){
+    //         console.log("inside if")
+    //         return done(null,false);
+    //     }
+    //     return done(null,user);
+    // },(err)=>{return done(null,false)})
     //     if(err){return done(null,err)};
     //     if(!user){return done(null,false,{msg:'inccorect User'})}
     //     return done(null,user);
@@ -85,8 +106,9 @@ app.post('/login',passport.authenticate('local',{
 }))
 
 app.get('/suc',(req,res)=>{
-    console.log("successful login")
-    res.send("success")
+    console.log("successful login",token)
+   // res.header('x-auth',token).send("success")
+    res.send(token)
 })
 
 app.get('/err',(req,res)=>{
@@ -143,8 +165,12 @@ var stud=mongoose.model('stud',{
     },
     email:{
         type:String,
-        require:true
-        //validate:{validator:validator.isEmail}
+        uniq:true,
+        require:true,
+        validate:{
+            validator:validator.isEmail,
+            message:'{VALUE} is not valid email'
+        }
     },
     hobbies:{
         type:String
@@ -164,7 +190,17 @@ var stud=mongoose.model('stud',{
     flag:{
         type: Number,
         require: true
-    }
+    },
+    tokens:[{
+        access:{
+            type:String,
+            require:true
+        },
+        token:{
+            type:String,
+            require:true
+        }
+    }]
 })
 
 app.post('/insert',(req,res)=>{
@@ -217,23 +253,36 @@ app.post('/insert',(req,res)=>{
     //
     //
     // var error=new validationErrors()
-
+    // newstud.save().then((info)=>{
+    //     console.log("inserted successfully=",info)
+    //     res.send(info)
+    // }).catch((err)=>{
+    //     console.log("error is=",err)
+    // })
+    console.log("at insert time......")
     console.log(req.body)
     console.log(req.files)
-
     var samplefile=req.files.photo
     samplefile.mv(__dirname+'/upload/'+samplefile.name)
-
-    console.log("at insert time......")
     var newstud=new stud(req.body);
-    newstud.password=bcrypt.hashSync(req.body.password,10);
+    newstud.password=bcrypt.hashSync(req.body.password,10)
     newstud.photo=samplefile.name;
     newstud.flag=1
-    newstud.save().then((info)=>{
-        console.log("inserted successfully=",info)
-        res.send(info)
+    newstud.save().then(()=>{
+        var access='auth';
+        var token=jwt.sign(
+            {
+                _id:newstud._id.toHexString()
+                ,access
+            },
+            'abc123').toString()
+        newstud.tokens.push({access,token})
+        console.log("Token",token)
+        return newstud.save().then(()=>{return token})
+    }).then((token)=>{
+        res.header('x-auth',token).send(newstud)
     }).catch((err)=>{
-        console.log("error is=",err)
+        res.send(err)
     })
 
 })
