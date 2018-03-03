@@ -16,17 +16,16 @@ app.use(cors())
 mongoose.Promise=global.Promise;
 app.use(fileUpload());
 app.use(express.static(__dirname+"/"))
+var expvalidator=require('express-validator')
+app.use(expvalidator())
 
-// app.use((req,res,next)=>{
-//     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//     res.header(`Access-Control-Expose-Headers`, `x-auth`);
-//     next();
-// });
+app.use((req,res,next)=>{
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header(`Access-Control-Expose-Headers`, `x-auth`);
+    next();
+});
 
-
-
-//app.use(validator())
-//var validator=require('express-validator')
 // app.use((req,res,next)=>{
 //     res.header('Access-Control-Allow-Origin','*');
 //     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -35,7 +34,6 @@ app.use(express.static(__dirname+"/"))
 //     res.header(`Access-Control-Expose-Headers`, `x-auth`);
 //     next();
 // });
-
 
 var passport=require('passport');
 var LocalStrategy=require('passport-local').Strategy;
@@ -94,8 +92,6 @@ passport.use(new LocalStrategy((username,password,done)=>{
     //     return done(null,user);
     // })
 }));
-
-
 
 app.get('/',(req,res)=>{
     res.sendFile(__dirname+'/');
@@ -161,6 +157,10 @@ var stud=mongoose.model('stud',{
     },
     gender:{
         type:String,
+        require:true
+    },
+    dob:{
+        type:Date,
         require:true
     },
     email:{
@@ -245,45 +245,47 @@ app.post('/insert',(req,res)=>{
     //         return res.status(500).send(err);
     //     console.log('File uploaded!');
     // }
-    // req.checkBody('email', 'Invalid email').notEmpty().isEmail().isUnique();
-    // req.checkBody('password', 'Invalid possword').notEmpty().len(8, 30);
-    // req.checkBody('first_name', 'Invalid first_name').notEmpty().isAlpha();
-    // req.checkBody('last_name', 'Invalid last_name').notEmpty().isAlpha();
-    // req.checkBody('dateofbirth', 'Invalid dateofbirth').notEmpty.isDate();
-    //
-    //
-    // var error=new validationErrors()
+    req.checkBody('sname', 'Invalid name').notEmpty().isAlpha();
+    req.checkBody('email', 'Invalid email').notEmpty().isEmail();
+    req.checkBody('password', 'Invalid possword').notEmpty().len(8, 30);
+
+    var error=req.validationErrors()
+    console.log(error)
     // newstud.save().then((info)=>{
     //     console.log("inserted successfully=",info)
     //     res.send(info)
     // }).catch((err)=>{
     //     console.log("error is=",err)
     // })
-    console.log("at insert time......")
-    console.log(req.body)
-    console.log(req.files)
-    var samplefile=req.files.photo
-    samplefile.mv(__dirname+'/upload/'+samplefile.name)
-    var newstud=new stud(req.body);
-    newstud.password=bcrypt.hashSync(req.body.password,10)
-    newstud.photo=samplefile.name;
-    newstud.flag=1
-    newstud.save().then(()=>{
-        var access='auth';
-        var token=jwt.sign(
-            {
-                _id:newstud._id.toHexString()
-                ,access
-            },
-            'abc123').toString()
-        newstud.tokens.push({access,token})
-        console.log("Token",token)
-        return newstud.save().then(()=>{return token})
-    }).then((token)=>{
-        res.header('x-auth',token).send(newstud)
-    }).catch((err)=>{
-        res.send(err)
-    })
+
+    if(error==false) {
+        console.log("at insert time......")
+        console.log(req.body)
+        //console.log(req.files)
+        // var samplefile = req.files.photo
+        // samplefile.mv(__dirname + '/upload/' + samplefile.name)
+        var newstud = new stud(req.body);
+        newstud.password = bcrypt.hashSync(req.body.password, 10)
+       // newstud.photo = samplefile.name;
+        newstud.flag = 1
+        newstud.save().then(() => {
+            var access = 'auth';
+            var token = jwt.sign({_id: newstud._id.toHexString()},'abc123').toString()
+            newstud.tokens.push({access, token})
+            console.log("Token", token)
+            return newstud.save().then(() => {
+                return token
+            })
+        }).then((token) => {
+            res.header('x-auth', token).send(newstud)
+        }).catch((err) => {
+            res.send(err)
+        })
+    }
+    else
+    {
+        res.send("error in data")
+    }
 
 })
 
