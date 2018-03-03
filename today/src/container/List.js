@@ -1,7 +1,7 @@
 // http://idea.ibdyr.com
-//     http://idea.iteblog.com/key.php
-//         http://www.aku.vn/idea
-//             http://www.imsxm.com/jetbrains-license-server.html
+//  http://idea.iteblog.com/key.php
+//   http://www.aku.vn/idea
+//  http://www.imsxm.com/jetbrains-license-server.html
 
 
 
@@ -10,6 +10,10 @@ import React, { Component } from 'react';
 import {bindActionCreators} from 'redux'
 import {connect} from 'react-redux';
 import {cityData,deldata,insertData,edtInfo,upadteData,Alldeldata} from '../action/index'
+
+var error=""
+
+
 class List extends Component {
     constructor(props) {
         super(props)
@@ -25,9 +29,11 @@ class List extends Component {
             deleteId: '',
             editId: '',
             numrec: 3,
+
             sname: '',
             age: '',
             contact: '',
+            dob:'',
             gender: '',
             email: '',
             hobbies: '',
@@ -43,9 +49,7 @@ class List extends Component {
 
 
 
-
-
-
+            error:'',
             errName:'',
             errAge:'',
             errGen:'',
@@ -152,19 +156,30 @@ class List extends Component {
         this.props.deldata(this.state.deleteId)
     }
     handleInsert=()=> {
-        var formdata=new FormData();
-        formdata.append('sname',this.state.sname);
-        formdata.append('age',this.state.age)
-        formdata.append('contact',this.state.contact)
-        formdata.append('password',this.state.password)
-        formdata.append('gender',this.state.gender);
-        formdata.append('email',this.state.email)
-        formdata.append('hobbies',this.state.hobbies)
-        formdata.append('state',this.state.state)
-        formdata.append('city',this.state.city)
-        formdata.append('photo',this.state.photo)
 
-        this.props.insertData(formdata)
+        // if(/^[a-zA-z]{3,50}$/.test(this.state.name)){
+        //     error+="Name must be Alpha 3 to 50"+<br/>
+        // }
+        // if(/^.{5,50}$/.test(this.state.password)) {
+        //     error += "Password must be 5 to 50"
+        // }
+        //
+        // if(error.length===0) {
+            var formdata = new FormData();
+            formdata.append('sname', this.state.sname);
+            formdata.append('age', this.state.age)
+            formdata.append('contact', this.state.contact)
+            formdata.append('password', this.state.password)
+            formdata.append('gender', this.state.gender);
+            formdata.append('email', this.state.email)
+            formdata.append('hobbies', this.state.hobbies)
+            formdata.append('state', this.state.state)
+            formdata.append('city', this.state.city)
+            formdata.append('photo', this.state.photo)
+            formdata.append('dob', this.state.dob)
+
+            this.props.insertData(formdata)
+       // }
         // this.props.insertData(this.state.sname, this.state.age, this.state.contact, this.state.password,
         //     this.state.gender, this.state.email, this.state.hobbies, this.state.state, this.state.city, this.state.photo)
     }
@@ -182,7 +197,8 @@ class List extends Component {
         formdata.append('city',this.state.city)
         formdata.append('photo',this.state.photo)
         formdata.append('id',this.state.editId)
-        console.log('photo',this.state.photo);
+        formdata.append('dob',this.state.dob)
+        //console.log('photo',this.state.photo);
         this.props.upadteData(formdata)
         // this.props.upadteData(this.state.editId,this.state.sname, this.state.age,this.state.contact, this.state.password, this.state.gender,this.state.email,this.state.hobbies,
         //     this.state.state,this.state.city,  this.state.photo1)
@@ -212,55 +228,31 @@ class List extends Component {
 
 
     chkvalidation=(e)=>{
+        console.log("In check validation")
         switch (e.target.id){
             case "name":
-                if(/^[a-zA-Z]{3,50}$/.test(e.target.value)){
-                    console.log(this.state.isCorrect)
-                    this.setState({flag:true});
-                }
-                else {
-                    this.setState({isCorrect:false})
-                    if(this.state.flag)
-                    {
-                        alert('username must be minimu 3 and maximum 50')
-                        this.setState({flag:false});
-                    }
-                    document.getElementById('name').focus();
-                      //  errName:'enter name properly'
-                    console.log(this.state.isCorrect)
+                if(!(/^[A-Za-z]{3,50}$/).test(e.target.value)){
+                    error+="Name must be character between 3 to 50"+"     "
+                    console.log(e.target.value)
+                    console.log(error)
                 }
                 break
             case "password":
-                if(/^.{3,50}$/.test(e.target.value)){
-                    console.log(this.state.isCorrect)
-                }
-                else {
-                    this.setState({isCorrect:false})
-                    this.setState({
-                        errPass:'enter proper password'
-                    })
-                   // alert('password must be minimu 3 and maximum 50')
-                    console.log(this.state.isCorrect)
+                if(!(/^.{5,50}$/).test(e.target.value)){
+                    error+="Password must be character between 5 to 50"+"     "
+                    console.log(e.target.value)
+                    console.log(error)
                 }
                 break
-            case "img":
-                if((e.target.files[0])){
-                    console.log("true")
-                }
-                else {
-                    this.setState({isCorrect:false})
-                    console.log(this.state.isCorrect)
-                }
-                break
-            case "age":
-                if(/^[0-9]{1,2}$/.test(e.target.value)){
-                    console.log(this.state.isCorrect)
-                }
-                else {
-                    this.setState({isCorrect:false})
-                    console.log(this.state.isCorrect)
-                }
-                break
+            // case "img":
+            //     if((e.target.files[0])){
+            //         console.log("true")
+            //     }
+            //     else {
+            //         this.setState({isCorrect:false})
+            //         console.log(this.state.isCorrect)
+            //     }
+            //     break
         }
     }
 
@@ -296,13 +288,13 @@ class List extends Component {
                             </div>
 
                             <div className="modal-body">
-                                <form onSubmit={(event) => {event.preventDefault();}} encType="multipart/form-data">
+                               <form onSubmit={(event) => {event.preventDefault();}} encType="multipart/form-data">
                                     <div className="form-row">
                                         <div className="form-group col-md-6">
                                             Student Name :-<input type="text" ref="name" id="name" placeholder="Name"
                                                                   className={this.state.flag?"form-control is-valid":"form-control is-invalid" }
                                                                   value={this.state.sname}
-                                                                  onBlur={this.chkvalidation}
+                                                                 onBlur={this.chkvalidation}
                                                                   onChange={(e) => {this.setState({sname: e.target.value})
 
                                         }}/>
@@ -319,14 +311,21 @@ class List extends Component {
                                     </div>
                                     <div className="form-row">
                                         <div className="form-group col-md-12">
-                                            Age :- <input type="text" ref="age" id="age" placeholder="age" className="form-control is-valid"
-                                                          onBlur={this.chkvalidation}
+                                            Age :- <input type="number" ref="age" id="age" placeholder="age" className="form-control is-valid"
+                                                         // onBlur={this.chkvalidation}
                                                           value={this.state.age} onChange={(e) => {this.setState({age: e.target.value})}}
                                         />
                                         </div>
                                     </div>
 
-
+                                    <div className="form-row">
+                                        <div className="form-group col-md-12">
+                                            Date of birth :- <input type="date" ref="dob" id="dob" placeholder="Date of birth"
+                                                                    className="form-control is-valid"// onBlur={this.chkvalidation}
+                                                                    onChange={(e) => {this.setState({dob: new Date(e.target.value)})}}
+                                        />
+                                        </div>
+                                    </div>
                                     <div class="form-check form-check-inline">
                                         <div className="form-group col-md-12">
                                             Hobbies :- <input type="checkbox" name="hby" onChange={this.hobyArr}
@@ -420,8 +419,8 @@ class List extends Component {
                                 {(this.state.isEditing) ?
                                     <button type="button" className="btn btn-primary" data-dismiss="modal"
                                             onClick={this.handleUpdate}>Update</button> :
-                                    <button disabled={!this.state.isCorrect} type="button" className="btn btn-primary" data-dismiss="modal"
-                                            onClick={this.handleInsert}>Submit</button>}
+                                    <button  type="button" className="btn btn-primary" data-dismiss="modal" onClick={this.handleInsert}>Submit</button>
+                                }
                                 <button type="button" className="btn btn-danger" data-dismiss="modal"
                                         onClick={this.clearData}>Close
                                 </button>
