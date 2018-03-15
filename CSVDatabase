@@ -17,3 +17,204 @@ null	2	1.jpg	null
 
 
 
+import React,{Component} from 'react';
+import Header from '../header';
+import {connect} from 'react-redux'
+import {bindActionCreators} from 'redux'
+import {csvFile} from '../../action/product_action/index'
+class Showproduct extends Component {
+    constructor(props){
+        super(props)
+        this.state={
+            inform:'',
+            csvfile:'',
+            files:[],
+            searchData:[],
+            sortData:[]
+        }
+    }
+    componentWillReceiveProps(nextProps){
+        this.setState({inform:nextProps.list})
+    }
+
+    handleMultipleFile=(e)=>{
+        console.log(e.target.files)
+        this.state.files.push(e.target.files)
+        // if(this.state.files.indexOf(e.target.value)==-1)
+        //     this.state.files.push(e.target.files)
+        // else
+        //     this.state.files.pop(e.target.files)
+    }
+    handleSubmit=()=>{
+        console.log('csvfile',this.state.csvfile)
+        console.log('Allfile',this.state.files[0])
+        for(let i=0;i<this.state.files[0].length;i++){
+            console.log('photos'+i,this.state.files[0][i])
+        }
+        console.log('how many files',this.state.files[0].length)
+        //console.log(parseInt(this.props.match.params.id))
+
+        let formData=new FormData()
+        formData.append('productId',1)
+        formData.append('csvfile',this.state.csvfile)
+        formData.append('len',this.state.files[0].length)
+        for(let i=0;i<this.state.files[0].length;i++){
+        formData.append('photos'+i,this.state.files[0][i])
+        }
+        this.props.csvFile(formData)
+    }
+    handleClear=()=>{
+        this.setState({csvfile:'',files:[]})
+    }
+
+    sort = (e) => {
+        var key = e.target.id
+        var mydata = [].concat(this.state.disData).sort((a, b) => a[key] > b[key])
+        this.setState({disData: mydata})
+    }
+    dsort = (e) => {
+        var key = e.target.id
+        var mydata = [].concat(this.state.disData).sort((a, b) => a[key] < b[key])
+        this.setState({disData: mydata})
+    }
+
+    // Customersearch = (e) => {
+    //     var arr = []
+    //     var data = e.target.value
+    //     if (e.target.value.length > 0) {
+    //         this.setState({isSearch: true})
+    //         this.props.user.map((val, i) => {
+    //             if (val.productName.includes(data) || val.manufacturer.includes(data) || val.description.includes(data))
+    //                 arr.push(val.productName)
+    //         })
+    //         this.setState({searchData: arr})
+    //     }
+    //     else {
+    //         this.setState({isSearch: false})
+    //     }
+    // }
+
+    Productsearch= (e) => {
+        var arr = []
+        var data = e.target.value
+        if (e.target.value.length > 0) {
+            this.setState({isSearch: true})
+            this.props.product.map((val, i) => {
+                if (val.owner.includes(data) || val.hireDate.includes(data) ||  val.returnDate.includes(data) || val.price.includes(data))
+                    arr.push(val.productName)
+            })
+            this.setState({searchData: arr})
+        }
+        else {
+            this.setState({isSearch: false})
+        }
+    }
+
+    render(){
+        return(
+            <div>
+                <h1> Product Id {parseInt(this.props.match.params.id)} </h1>
+                <form onSubmit={(e)=>{e.preventDefault()}} encType="multipart/form-data"  >
+                    Enter your csv file :- <input type="file" onChange={(e)=>this.setState({csvfile:e.target.files[0]})} /><br/>
+                    Enter Images :-
+                    <input id='upload' name="upload" type="file" multiple="multiple"  onChange={this.handleMultipleFile} /><br/>
+
+
+
+                    Searching        <input type="text" className="form-control is-valid" onChange={this.Customersearch}
+                                            placeholder="search All Customer "/> <br/>
+
+                    Searching        <input type="text" className="form-control is-valid" onChange={this.Inventorysearch}
+                                            placeholder="search All Customer "/> <br/>
+
+
+                    Product     Sorting  <br/>
+                    manufacturer<a id="manufacturer" onClick={this.sort}>&#9650;</a>
+                    <a id="manufacturer" onClick={this.dsort}>&#9660;</a> <br/><br/>
+
+                    rating<a id="rating" onClick={this.sort}>&#9650;</a>
+                    <a id="rating" onClick={this.dsort}>&#9660;</a> <br/><br/>
+
+                    price<a id="rating" onClick={this.sort}>&#9650;</a>
+                    <a id="rating" onClick={this.dsort}>&#9660;</a> <br/><br/>
+
+
+                    <button type="submit" value="submit" onClick={this.handleSubmit}>Submit</button>
+                    <button type="button" value="submit" onClick={this.handleClear}>Clear</button>
+                </form>
+            </div>
+
+        );
+    }
+}
+function  mapStateToProps(state) {
+    return{
+        inform:state.login
+    }
+}
+function mapDispatchToProps(dispatch) {
+    return bindActionCreators({csvFile},dispatch)
+}
+export default connect(mapStateToProps,mapDispatchToProps)(Showproduct);
+
+
+
+
+
+const {con}=require('../config/conn')
+const mysql=require('mysql')
+exports.csvFile=(req,res)=>{
+    // for($i=0; $i<count($_FILES['upload']['name']); $i++) {
+    //     //Get the temp file path
+    //     $tmpFilePath = $_FILES['upload']['tmp_name'][$i];
+    //
+    //     //Make sure we have a filepath
+    //     if ($tmpFilePath != "") {
+    //
+    //         //save the filename
+    //         $shortname = $_FILES['upload']['name'][$i];
+    //
+    //         //save the url and the file
+    //         $filePath = "uploaded/".date('d-m-Y-H-i-s').
+    //         '-'.$_FILES['upload']['name'][$i];
+    //
+    //         //Upload the file into the temp dir
+    //         if (move_uploaded_file($tmpFilePath, $filePath)) {
+    //
+    //             $files[] = $shortname;
+    //             //insert into db
+    //             //use $shortname for the filename
+    //             //use $filePath for the relative url to the file
+    //
+    //         }
+    //     }
+    // }
+
+   var len=req.body.len
+    console.log(len)
+   for(let i=0;i<len;i++){
+       console.log(req.files.photos[i])
+   }
+   console.log(req.files.csvfile)
+     let sampleFile = req.files.csvfile;
+     sampleFile.mv(__dirname+'/upload/'+sampleFile.name)
+
+    let query="insert into photos(productId,photo)values(?,?)"
+    let param=[req.body.productId,sampleFile.name];
+    query=mysql.format(query,param);
+    con.query(query,(err,result)=>{
+        if(err)
+        {
+            console.log('error',err)
+            res.send("Error in executing MySQL query");
+        }
+        if(result)
+        {
+            console.log('response',result)
+            res.send(result)
+        }
+    })
+};
+
+
+
