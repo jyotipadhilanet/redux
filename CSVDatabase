@@ -1,0 +1,19 @@
+//it can't be executed by procedure bcoz it not support Load data file query
+LOAD DATA INFILE 'e:/jyoti.csv'
+INTO TABLE products 
+FIELDS TERMINATED BY ',' 
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS;
+
+
+
+photoId	productId	photo	isDelete
+null	1	1.jpg	null
+null	1	1.jpg	null
+null	2	1.jpg	null
+null	2	1.jpg	null
+
+
+
+
