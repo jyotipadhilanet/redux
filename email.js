@@ -61,19 +61,6 @@ function mapDispatchToProps(dispatch) {
 export default connect(mapStateToProps,mapDispatchToProps)(Showproduct);
 
 
-
-
-
-const axios=require('axios');
-export const csvFile=(obj)=> {
-    return ((dispatch)=>{
-        console.log("in action of csvfile...")
-        return axios.post('http://localhost:4000/api/upload',obj).then((sucess)=>{
-            dispatch({type:"csv_file",payload:sucess.data})
-        })
-    })
-}
-
 export const sendEmail=(obj)=>{
     return((dispatch)=>{
         console.log("in action of sendEmail...")
@@ -83,22 +70,6 @@ export const sendEmail=(obj)=>{
     })
 }
 
-
-
-
-
-
-
-
-export function csv_file_reducers(state=[],action) {
-    switch (action.type){
-        case "csv_file":
-            console.log("In csv reducer ", action.payload);
-            return action.payload;
-        default:
-            return state;
-    }
-}
 
 export function send_email_reducers(state=[],action) {
     switch (action.type){
