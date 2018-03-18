@@ -18,7 +18,6 @@ null	2	1.jpg	null
 
 
 import React,{Component} from 'react';
-import Header from '../header';
 import {connect} from 'react-redux'
 import {bindActionCreators} from 'redux'
 import {csvFile} from '../../action/product_action/index'
@@ -36,7 +35,6 @@ class Showproduct extends Component {
     componentWillReceiveProps(nextProps){
         this.setState({inform:nextProps.list})
     }
-
     handleMultipleFile=(e)=>{
         console.log(e.target.files)
         this.state.files.push(e.target.files)
@@ -53,14 +51,16 @@ class Showproduct extends Component {
         }
         console.log('how many files',this.state.files[0].length)
         //console.log(parseInt(this.props.match.params.id))
-
         let formData=new FormData()
         formData.append('productId',1)
         formData.append('csvfile',this.state.csvfile)
         formData.append('len',this.state.files[0].length)
         for(let i=0;i<this.state.files[0].length;i++){
-        formData.append('photos'+i,this.state.files[0][i])
+            formData.append('photos'+i,this.state.files[0])
         }
+        // for(let i=0;i<this.state.files[0].length;i++){
+        //     formData.append('photos['+i+']',this.state.files[0][i])
+        // }
         this.props.csvFile(formData)
     }
     handleClear=()=>{
@@ -77,22 +77,6 @@ class Showproduct extends Component {
         var mydata = [].concat(this.state.disData).sort((a, b) => a[key] < b[key])
         this.setState({disData: mydata})
     }
-
-    // Customersearch = (e) => {
-    //     var arr = []
-    //     var data = e.target.value
-    //     if (e.target.value.length > 0) {
-    //         this.setState({isSearch: true})
-    //         this.props.user.map((val, i) => {
-    //             if (val.productName.includes(data) || val.manufacturer.includes(data) || val.description.includes(data))
-    //                 arr.push(val.productName)
-    //         })
-    //         this.setState({searchData: arr})
-    //     }
-    //     else {
-    //         this.setState({isSearch: false})
-    //     }
-    // }
 
     Productsearch= (e) => {
         var arr = []
@@ -158,6 +142,58 @@ function mapDispatchToProps(dispatch) {
 export default connect(mapStateToProps,mapDispatchToProps)(Showproduct);
 
 
+import React,{Component} from 'react';
+import {connect} from 'react-redux'
+import {bindActionCreators} from 'redux'
+import {csvFile} from '../../action/product_action/index'
+class Showproduct extends Component {
+    constructor(props){
+        super(props)
+        this.state={
+            inform:'',
+            csvfile:''
+        }
+    }
+    componentWillReceiveProps(nextProps){
+        this.setState({inform:nextProps.list})
+    }
+    handleSubmit=()=>{
+        let formData=new FormData()
+        formData.append('csvfile',this.state.csvfile)
+        this.props.csvFile(formData)
+    }
+    handleClear=()=>{
+        this.setState({csvfile:'',inform:''})
+    }
+    render(){
+        return(
+            <div>
+              <form onSubmit={(e)=>{e.preventDefault()}} encType="multipart/form-data"  >
+                    Enter your Customer info csv file :- <input type="file" onChange={(e)=>this.setState({csvfile:e.target.files[0]})} /><br/>
+                    <button type="submit" value="submit" onClick={this.handleSubmit}>Submit</button>
+                    <button type="button" value="submit" onClick={this.handleClear}>Clear</button>
+                </form>
+            </div>
+
+        );
+    }
+}
+function  mapStateToProps(state) {
+    return{
+        inform:state.login
+    }
+}
+function mapDispatchToProps(dispatch) {
+    return bindActionCreators({csvFile},dispatch)
+}
+export default connect(mapStateToProps,mapDispatchToProps)(Showproduct);
+
+
+
+
+
+
+
 
 
 
@@ -202,6 +238,41 @@ exports.csvFile=(req,res)=>{
     let query="insert into photos(productId,photo)values(?,?)"
     let param=[req.body.productId,sampleFile.name];
     query=mysql.format(query,param);
+    con.query(query,(err,result)=>{
+        if(err)
+        {
+            console.log('error',err)
+            res.send("Error in executing MySQL query");
+        }
+        if(result)
+        {
+            console.log('response',result)
+            res.send(result)
+        }
+    })
+};
+
+
+
+
+const {con}=require('../config/conn')
+const mysql=require('mysql')
+exports.csvFile=(req,res)=>{
+    let sampleFile = req.files.csvfile;
+    sampleFile.mv(__dirname+'/uploadCSV/'+sampleFile.name)
+    console.log("LOAD DATA INFILE '"+__dirname+'/uploadCSV/'+sampleFile.name+"'"+
+        " INTO TABLE user "+
+        " FIELDS TERMINATED BY ',' "+
+        " LINES TERMINATED BY '\n' "+
+        " IGNORE 1 ROWS;")
+
+let query="LOAD DATA INFILE '"+__dirname+'/uploadCSV/'+sampleFile.name+"'"+
+        " INTO TABLE user "+
+        " FIELDS TERMINATED BY ',' "+
+        " LINES TERMINATED BY '\n' "+
+        " IGNORE 1 ROWS;";
+    // let param=[__dirname+'/uploadCSV/'+sampleFile.name,user];
+    // query=mysql.format(query,param);
     con.query(query,(err,result)=>{
         if(err)
         {
