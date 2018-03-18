@@ -153,7 +153,7 @@ export default connect(mapStateToProps,mapDispatchToProps)(Showproduct);
 import React,{Component} from 'react';
 import {connect} from 'react-redux'
 import {bindActionCreators} from 'redux'
-import {csvFile} from '../../action/product_action/index'
+import {csvFile} from '../../action/admin_action/index'
 class Showproduct extends Component {
     constructor(props){
         super(props)
@@ -163,7 +163,7 @@ class Showproduct extends Component {
         }
     }
     componentWillReceiveProps(nextProps){
-        this.setState({inform:nextProps.list})
+        this.setState({inform:nextProps.inform})
     }
     handleSubmit=()=>{
         let formData=new FormData()
@@ -188,13 +188,14 @@ class Showproduct extends Component {
 }
 function  mapStateToProps(state) {
     return{
-        inform:state.login
+        inform:state.csv
     }
 }
 function mapDispatchToProps(dispatch) {
     return bindActionCreators({csvFile},dispatch)
 }
 export default connect(mapStateToProps,mapDispatchToProps)(Showproduct);
+
 
 
 
