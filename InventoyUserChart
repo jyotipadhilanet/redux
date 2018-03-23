@@ -250,7 +250,36 @@ export default connect(mapStateToProps,matchDispatchToProps)(InventoryChartEx);
     
     
     
+    let flag='asc',custname='';
     
+     sort=(e)=>{
+        if(flag==='asc') {
+            var key = e.target.id;
+
+            var myData = [].concat(this.state.cust_list.sort((a, b) => a[key] > b[key]));
+
+            console.log('Sorting', myData);
+            this.setState({
+                cust_list: myData
+            })
+            flag='desc'
+        }
+        else if(flag==='desc'){
+            var key = e.target.id;
+            var myData = [].concat(this.state.cust_list.sort((a, b) => a[key] < b[key]));
+            console.log('Sorting', myData);
+            this.setState({
+                cust_list: myData
+            })
+            flag='asc'
+        }
+    }
+    
+    <th id="userName" onClick={this.sort}>User Name</th>
+                                            <th id="email" onClick={this.sort}>Email</th>
+                                            <th id="contactNo" onClick={this.sort}>ContactNo</th>
+                                            <th id="address" onClick={this.sort}>Address</th>
+                                            
 
 
 
