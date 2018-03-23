@@ -5,7 +5,7 @@
   
     
     exports.fetchUserProduct=(req,res)=>{
-    let query="select productName as x, stock as y from product where userId="+req.params.id;
+    let query="select productName as name, stock as qty from product where userId="+req.params.id;
     con.query(query,(err,result)=>{
         if(err)
         {console.log('error',err)
@@ -18,8 +18,9 @@
     })
 };
 exports.fetchUserProductSell=(req,res)=>{
-    let query="SELECT product.productName as x, orderitem.qty as y FROM product,orderitem,user "+
-        "WHERE user.userId=product.userId and orderitem.productId=product.productId and user.userId="+req.params.id;
+    let query="SELECT product.productName as name, sum(orderitem.qty) as total FROM product,orderitem,user "+ 
+  "WHERE user.userId=product.userId and orderitem.productId=product.productId and user.userId="+req.params.id+
+ " group by product.productName";
     con.query(query,(err,result)=>{
         if(err)
         {console.log('error',err)
@@ -45,7 +46,7 @@ exports.fetchUserProductCnt=(req,res)=>{
     })
 };
 exports.fetchUserProductSellCnt=(req,res)=>{
-    let query="SELECT count(*) FROM product,orderitem,user WHERE user.userId=product.userId and orderitem.productId=product.productId and user.userId="+req.params.id;
+    let query="SELECT count(*) as cnt FROM product,orderitem,user WHERE user.userId=product.userId and orderitem.productId=product.productId and user.userId="+req.params.id;
     con.query(query,(err,result)=>{
         if(err)
         {console.log('error',err)
@@ -161,20 +162,12 @@ class InventoryChartEx extends Component{
         this.props.inventoryProductSellCnt()
     }
     componentWillReceiveProps(nextProps){
-        this.setState({invData:nextProps.inventoryProduct})
-        this.setState({invSellData:nextProps.inventoryProductSell})
-        //  nextProps.topCustomers.map((v,i)=>{
-        //      this.state.customerData.push({'x':v.name,'y':v.total})
-        //  })
-        // nextProps.topProducts.map((v,i)=>{
-        //     this.state.productData.push({'x':v.name,'y':v.total})
-        // })
-    }
-    handleInventory=()=>{
-        this.props.history.push('/admin/inventoryUser')
-    }
-    handleCustomer=()=>{
-        this.props.history.push('/admin/customer')
+          nextProps.inventoryProduct.map((v,i)=>{
+             this.state.invData.push({'x':v.name,'y':v.total})
+         })
+        nextProps.inventoryProductSell.map((v,i)=>{
+            this.state.invSellData.push({'x':v.name,'y':v.total})
+        })
     }
     render(){
         return(
@@ -226,7 +219,19 @@ class InventoryChartEx extends Component{
                                 colorBars
                                 height="400"
                                 width="400"
-                                data={this.state.productData}
+                                data={this.state.invData}
+                            />
+                        </div>
+                         <div className="col-sm-4">
+                            <h1>On Demand Products</h1>
+                            <BarChart
+                                axisLabels={{x: 'My x Axis', y: 'My y Axis'}}
+                                axes
+                                grid
+                                colorBars
+                                height="400"
+                                width="400"
+                                data={this.state.invSellData}
                             />
                         </div>
                     </div>
