@@ -1,0 +1,258 @@
+  app.get('/api/product/list/:id',product.fetchUserProduct)
+    app.get('/api/product/listsell/:id',product.fetchUserProductSell)
+    app.get('/api/product/listCnt/:id',product.fetchUserProductCnt)
+    app.get('/api/product/listsell/:id',product.fetchUserProductSellCnt)
+  
+    
+    exports.fetchUserProduct=(req,res)=>{
+    let query="select productName as x, stock as y from product where userId="+req.params.id;
+    con.query(query,(err,result)=>{
+        if(err)
+        {console.log('error',err)
+            res.json({"Error" : true, "Message" : "Error in executing MySQL query"});}
+        if(result)
+        {
+            console.log('response',result)
+            res.send(result)
+        }
+    })
+};
+exports.fetchUserProductSell=(req,res)=>{
+    let query="SELECT product.productName as x, orderitem.qty as y FROM product,orderitem,user "+
+        "WHERE user.userId=product.userId and orderitem.productId=product.productId and user.userId="+req.params.id;
+    con.query(query,(err,result)=>{
+        if(err)
+        {console.log('error',err)
+            res.json({"Error" : true, "Message" : "Error in executing MySQL query"});}
+        if(result)
+        {
+            console.log('response',result)
+            res.send(result)
+        }
+    })
+};
+exports.fetchUserProductCnt=(req,res)=>{
+    let query="select stock from product where userId="+req.params.id;
+    con.query(query,(err,result)=>{
+        if(err)
+        {console.log('error',err)
+            res.json({"Error" : true, "Message" : "Error in executing MySQL query"});}
+        if(result)
+        {
+            console.log('response',result)
+            res.send(result)
+        }
+    })
+};
+exports.fetchUserProductSellCnt=(req,res)=>{
+    let query="SELECT count(*) FROM product,orderitem,user WHERE user.userId=product.userId and orderitem.productId=product.productId and user.userId="+req.params.id;
+    con.query(query,(err,result)=>{
+        if(err)
+        {console.log('error',err)
+            res.json({"Error" : true, "Message" : "Error in executing MySQL query"});}
+        if(result)
+        {
+            console.log('response',result)
+            res.send(result)
+        }
+    })
+};
+
+
+
+
+
+export const GetInventoryProduct=(id)=>{
+    return (dispatch)=>{
+        axios.get(baseurl+'/api/product/list/'+id).then((success)=>{
+            dispatch ({type:"Get_Inventory_Product", payload:success.data})
+        })
+    }
+}
+export const GetInventoryProductSell=(id)=>{
+    return (dispatch)=>{
+        axios.get(baseurl+'/api/product/listsell/'+id).then((success)=>{
+            dispatch ({type:"Get_InventoryProduct_Sell", payload:success.data})
+        })
+    }
+}
+export const GetInventoryProductCnt=(id)=>{
+    return (dispatch)=>{
+        axios.get(baseurl+'/api/product/listCnt/'+id).then((success)=>{
+            dispatch ({type:"Get_Inventory_ProductCnt", payload:success.data})
+        })
+    }
+}
+export const GetInventoryProductSellCnt=(id)=>{
+    return (dispatch)=>{
+        axios.get(baseurl+'/api/product/listsellCnt/'+id).then((success)=>{
+            dispatch ({type:"Get_Inventory_ProductSellCnt", payload:success.data})
+        })
+    }
+}
+
+
+
+
+export function Get_Inventory_Product_reducer(state=[],action) {
+    switch (action.type){
+        case "Get_Inventory_Product":
+            return action.payload;
+        default:
+            return state;
+    }
+}
+export function Get_InventoryProduct_Sell_reducer(state=[],action) {
+    switch (action.type){
+        case "Get_InventoryProduct_Sell":
+            return action.payload;
+        default:
+            return state;
+    }
+}
+export function Get_Inventory_ProductCnt_reducer(state=[],action) {
+    switch (action.type){
+        case "Get_Inventory_ProductCnt":
+            return action.payload;
+        default:
+            return state;
+    }
+}
+export function Get_Inventory_ProductSellCnt_reducer(state=[],action) {
+    switch (action.type){
+        case "Get_Inventory_ProductSellCnt":
+            return action.payload;
+        default:
+            return state;
+    }
+}
+
+
+
+import {Get_Inventory_Product_reducer,Get_InventoryProduct_Sell_reducer,
+Get_Inventory_ProductCnt_reducer,Get_Inventory_ProductSellCnt_reducer,topCustomer_reducers,
+topProduct_reducers,topInventoryUser_reducers,CountCustomer,CountInventoryUser,CountProduct} from './report_reducrs/index'
+
+ inventoryProduct:Get_Inventory_Product_reducer,
+    inventoryProductSell:Get_InventoryProduct_Sell_reducer,
+    inventoryProductCnt:Get_Inventory_ProductCnt_reducer,
+    inventoryProductSellCnt:Get_Inventory_ProductSellCnt_reducer
+    
+    
+    
+    
+    import React,{Component} from 'react';
+import {connect} from 'react-redux'
+import{bindActionCreators} from 'redux';
+import {BarChart} from 'react-easy-chart';
+import {GetInventoryProduct,GetInventoryProductSell,GetInventoryProductCnt,GetInventoryProductSellCnt} from '../../action/report_action/index';
+class InventoryChartEx extends Component{
+    constructor(props){
+        super(props);
+        this.state={
+            invData:[],
+            invSellData:[],
+        }
+    }
+    componentWillMount(){
+        this.props.inventoryProduct()
+        this.props.inventoryProductSell(),
+        this.props.inventoryProductCnt,
+        this.props.inventoryProductSellCnt()
+    }
+    componentWillReceiveProps(nextProps){
+        this.setState({invData:nextProps.inventoryProduct})
+        this.setState({invSellData:nextProps.inventoryProductSell})
+        //  nextProps.topCustomers.map((v,i)=>{
+        //      this.state.customerData.push({'x':v.name,'y':v.total})
+        //  })
+        // nextProps.topProducts.map((v,i)=>{
+        //     this.state.productData.push({'x':v.name,'y':v.total})
+        // })
+    }
+    handleInventory=()=>{
+        this.props.history.push('/admin/inventoryUser')
+    }
+    handleCustomer=()=>{
+        this.props.history.push('/admin/customer')
+    }
+    render(){
+        return(
+            <div>
+                <div class="container">
+                    <div className="row">
+                        <div className="col-sm-4">
+                            <div onClick={this.handleCustomer} className="col-sm-2" style={{"cursor":"pointer","backgroundColor":"peachpuff","font-size":"3.4em","color":"Tomato"}}>
+                                <i className="fa fa-user"></i>
+                            </div>
+                            <div className="col-sm-4" style={{"backgroundColor":"orange"}}>
+                                <center>
+                                    <h3>{this.props.inventoryProductCnt}</h3>
+                                    <h5>Customers</h5>
+                                </center>
+                            </div>
+                        </div>
+                        <div className="col-sm-4">
+                            <div onClick={this.handleInventory} className="col-sm-2" style={{"cursor":"pointer","backgroundColor":"peachpuff","font-size":"3.4em","color":"Tomato"}}>
+                                <i className="fa fa-users"></i>
+                            </div>
+                            <div className="col-sm-4" style={{"backgroundColor":"orange"}}>
+                                <center>
+                                    <h3>{this.props.inventoryProductSellCnt}</h3>
+                                    <h5>Suppliers</h5>
+                                </center>
+                            </div>
+                        </div>
+                        <div className="col-sm-4">
+                            <div onClick={this.handleProduct} className="col-sm-2" style={{"cursor":"pointer","backgroundColor":"peachpuff","font-size":"3.4em","color":"Tomato"}}>
+                                <i className="fa fa-product-hunt"></i>
+                            </div>
+                            <div className="col-sm-4" style={{"backgroundColor":"orange"}}>
+                                <center>
+                                    <h3>{this.props.cntProduct}</h3>
+                                    <h5>Products</h5>
+                                </center>
+                            </div>
+                        </div>
+                    </div>
+                    <hr/>
+                    <div  className="row">
+                        <div className="col-sm-4">
+                            <h1>On Demand Products</h1>
+                            <BarChart
+                                axisLabels={{x: 'My x Axis', y: 'My y Axis'}}
+                                axes
+                                grid
+                                colorBars
+                                height="400"
+                                width="400"
+                                data={this.state.productData}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+}
+function  mapStateToProps(state) {
+    return{
+        inventoryProduct:state.inventoryProduct,
+        inventoryProductSell:state.inventoryProductSell,
+        inventoryProductCnt:state.inventoryProductCnt,
+        inventoryProductSellCnt:state.inventoryProductSellCnt
+    }
+}
+function matchDispatchToProps(dispatch){
+    return bindActionCreators({GetInventoryProduct,GetInventoryProductSell,GetInventoryProductCnt,GetInventoryProductSellCnt},dispatch)
+}
+export default connect(mapStateToProps,matchDispatchToProps)(InventoryChartEx);
+    
+    
+    
+    
+
+
+
+
+
