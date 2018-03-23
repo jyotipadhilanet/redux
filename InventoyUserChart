@@ -5,7 +5,7 @@
   
     
     exports.fetchUserProduct=(req,res)=>{
-    let query="select productName as name, stock as qty from product where userId="+req.params.id;
+    let query="select productName as name, stock as total from product where userId="+req.params.id;
     con.query(query,(err,result)=>{
         if(err)
         {console.log('error',err)
