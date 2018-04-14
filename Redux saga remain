@@ -1,0 +1,137 @@
+import React, { Component } from 'react';
+import {connect} from 'react-redux'
+import {withRouter} from 'react-router'
+class Welcome extends Component {
+    componentWillMount(){
+    this.props.fetchData()
+    }
+    componentWillReceiveProps(nextProps){
+        console.log('receive',nextProps)
+    }
+    render() {
+        return (
+            <div>
+               <table border="1">
+                   <tbody>
+                   {
+                       this.props && this.props.user.map((v,i)=>{
+                           return <tr>
+                                       <td>{v.name}</td>
+                                       <td>{v.surname}</td>
+                                  </tr>
+                   })
+                   }
+                   </tbody>
+               </table>
+            </div>
+        );
+    }
+}
+function mapStateToProps(state) {
+    return{
+       user:state.userdata
+    }
+}
+function mapDispatchToProps(dispatch) {
+    return {
+        fetchData: () => {
+            dispatch({type:"DataList"})
+        }
+    }
+}
+export default withRouter(connect(mapStateToProps,mapDispatchToProps)(Welcome));
+
+
+
+
+export default function (state=[],action) {
+    switch(action.type){
+        case "GET_LIST":
+            return action.payload
+    }
+    return state
+}
+
+
+
+import {combineReducers} from 'redux'
+import fetch from './fetchdata'
+export default combineReducers({
+    userdata:fetch
+})
+
+
+import {put,takeEvery} from 'redux-saga/effects'
+const axios=require('axios')
+function* fetchdata(){
+      let user= yield axios.get('http://localhost:5000/fetch')
+      yield put({type:"GET_LIST",payload:user.data})
+}
+export default function* mysaga() {
+    yield takeEvery("DataList",fetchdata)
+}
+
+
+
+
+import React, { Component } from 'react';
+import './App.css';
+import {NavLink,Route,Redirect} from 'react-router-dom'
+import AppBar from 'material-ui/AppBar';
+import About from './container/about'
+import Contact from './container/contact'
+import Login from './container/Login'
+import Header from './container/Header'
+import Footer from './container/Footer'
+import Welcome from './container/welcome'
+
+const Link=()=>{
+return(
+    <div>
+      <NavLink to="/">About  ::</NavLink>
+      <NavLink to="/contact">Contact  ::</NavLink>
+      <NavLink to="/login">Login  ::</NavLink>
+    </div>
+  )
+}
+const PublicRoute=({...props})=>{
+  return(
+      !localStorage.getItem('user')?
+      <Route {...props} />:
+      <Redirect to="/"  />
+  )
+}
+const PrivateRoute=({...props})=>{
+    return(
+       localStorage.getItem('user')?
+           <div>
+               <Welcome/>
+               <Route {...props} /></div>:
+            <Redirect to="/login"  />
+    )
+}
+
+class App extends Component {
+  render() {
+    return (
+      <div>
+        <Header/>
+          <AppBar
+              title="Redux saga example"
+              iconClassNameRight="muidocs-icon-navigation-expand-more">
+               <Link/>
+          </AppBar>
+        <div>
+           <PublicRoute exact component={About} path="/"  />
+           <PrivateRoute exact component={Welcome} path='/home'  />
+           <PublicRoute exact  component={Login} path="/login"  />
+           <PublicRoute exact component={Contact} path="/contact"/>
+        </div>
+        <Footer/>
+      </div>
+    );
+  }
+}
+export default App;
+
+
