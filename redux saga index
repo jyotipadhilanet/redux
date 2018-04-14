@@ -1,0 +1,33 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+import registerServiceWorker from './registerServiceWorker';
+
+import {composeWithDevTools} from 'redux-devtools-extension'
+import {createStore,applyMiddleware} from 'redux'
+import {Provider} from 'react-redux'
+import {ConnectedRouter,routerMiddleware} from 'react-router-redux'
+import CreateHistory from 'history/createBrowserHistory'
+import AllReducer from './reducer/index'
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
+import thunk from 'redux-thunk'
+
+import CreateSagaMiddle from 'redux-saga'
+import mysaga from './saga/saga'
+const sagamiddle=CreateSagaMiddle()
+
+const history=CreateHistory()
+const store=createStore(AllReducer,composeWithDevTools(applyMiddleware(thunk,routerMiddleware(history),sagamiddle)))
+
+sagamiddle.run(mysaga)
+ReactDOM.render(
+    <Provider store={store}>
+        <ConnectedRouter history={history}>
+            <MuiThemeProvider>
+              <App/>
+            </MuiThemeProvider>
+        </ConnectedRouter>
+    </Provider>
+    ,document.getElementById('root'));
+registerServiceWorker()
